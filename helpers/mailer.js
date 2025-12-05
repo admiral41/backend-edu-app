@@ -432,4 +432,55 @@ exports.sendPasswordResetMail = async (data) => {
   return result;
 };
 
+/**
+ * Send enquiry notification emails
+ * Sends to both admin and user
+ */
+exports.sendEnquiryMail = async (data) => {
+  const { getAdminEnquiryTemplate, getUserEnquiryConfirmationTemplate } = require('./emailTemplates/enquiry.template');
+
+  // Email to admin
+  const adminMessage = {
+    from: process.env.SENDER_EMAIL,
+    to: process.env.ADMIN_EMAIL || 'wildgaming490@gmail.com', // Use env variable or fallback
+    subject: `New Enquiry from ${data.name}`,
+    html: getAdminEnquiryTemplate({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      level: data.level,
+      message: data.message,
+      submittedAt: data.submittedAt || new Date()
+    })
+  };
+
+  // Email to user (confirmation)
+  const userMessage = {
+    from: process.env.SENDER_EMAIL,
+    to: data.email,
+    subject: 'Thank You for Your Enquiry - PadhaiHub',
+    html: getUserEnquiryConfirmationTemplate({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      level: data.level
+    })
+  };
+
+  try {
+    // Send both emails
+    const adminResult = await smtpTransport.sendMail(adminMessage);
+    const userResult = await smtpTransport.sendMail(userMessage);
+
+    return {
+      success: true,
+      adminResult,
+      userResult
+    };
+  } catch (error) {
+    console.error('Error sending enquiry emails:', error);
+    throw error;
+  }
+};
+
 // module.exports = sendMail

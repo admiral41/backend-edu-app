@@ -9,5 +9,6 @@ router.get("/", (req, res) => {
     res.json({ message: "API Working ✅" });
 });
 router.use("/verification", require("../routes/verification"));
+router.use("/enquiry", require("../routes/enquiry.route"));
 
 module.exports = router; 
