@@ -10,5 +10,6 @@ router.get("/", (req, res) => {
 });
 router.use("/verification", require("../routes/verification"));
 router.use("/enquiry", require("../routes/enquiry.route"));
+router.use("/newsletter", require("../routes/newsletter.route"));
 
 module.exports = router; 

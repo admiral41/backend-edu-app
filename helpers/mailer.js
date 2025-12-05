@@ -483,4 +483,33 @@ exports.sendEnquiryMail = async (data) => {
   }
 };
 
+/**
+ * Send newsletter welcome email
+ * Sends to user after they subscribe to the newsletter
+ */
+exports.sendNewsletterWelcomeMail = async (data) => {
+  const { getNewsletterWelcomeTemplate } = require('./emailTemplates/newsletter.template');
+
+  const message = {
+    from: process.env.SENDER_EMAIL,
+    to: data.email,
+    subject: 'Welcome to PadhaiHub Newsletter! 🎉',
+    html: getNewsletterWelcomeTemplate({
+      name: data.name || 'Subscriber',
+      email: data.email
+    })
+  };
+
+  try {
+    const result = await smtpTransport.sendMail(message);
+    return {
+      success: true,
+      result
+    };
+  } catch (error) {
+    console.error('Error sending newsletter welcome email:', error);
+    throw error;
+  }
+};
+
 // module.exports = sendMail
