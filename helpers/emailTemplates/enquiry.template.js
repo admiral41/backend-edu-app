@@ -16,90 +16,71 @@ exports.getAdminEnquiryTemplate = (data) => {
     <html lang="en">
     <head>
       <meta charset="UTF-8" />
-      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>New Enquiry Received</title>
+      <title>New Enquiry</title>
     </head>
-    <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
-      <table border="0" cellspacing="0" cellpadding="0" align="center" style="border-collapse: collapse; width: 100%; max-width: 600px; margin: 20px auto; background-color: #ffffff;">
+    <body style="margin: 0; padding: 0; background-color: #f9f9f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+      <table border="0" cellspacing="0" cellpadding="0" align="center" style="border-collapse: collapse; width: 100%; max-width: 560px; margin: 40px auto; background-color: #ffffff; border: 1px solid #e0e0e0;">
         <tbody>
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #1877f2 0%, #0d5dbf 100%); padding: 30px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px;">New Enquiry Received</h1>
-              <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Someone is interested in your courses!</p>
+            <td style="padding: 25px 30px; border-bottom: 1px solid #eee;">
+              <h1 style="color: #333; margin: 0; font-size: 18px; font-weight: 600;">New Enquiry Received</h1>
             </td>
           </tr>
 
           <!-- Content -->
           <tr>
-            <td style="padding: 40px 30px;">
-              <h2 style="color: #333333; margin: 0 0 20px 0; font-size: 20px;">Enquiry Details</h2>
-
-              <!-- Student Info -->
-              <table border="0" cellspacing="0" cellpadding="0" style="width: 100%; margin-bottom: 30px;">
+            <td style="padding: 25px 30px;">
+              <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
                 <tr>
-                  <td style="padding: 12px; background-color: #f8f9fa; border-left: 4px solid #1877f2;">
-                    <strong style="color: #333333; display: block; margin-bottom: 5px;">Full Name</strong>
-                    <span style="color: #555555;">${data.name}</span>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+                    <span style="color: #888; font-size: 13px;">Name</span><br/>
+                    <span style="color: #333; font-size: 15px;">${data.name}</span>
                   </td>
                 </tr>
-                <tr><td style="height: 10px;"></td></tr>
                 <tr>
-                  <td style="padding: 12px; background-color: #f8f9fa; border-left: 4px solid #1877f2;">
-                    <strong style="color: #333333; display: block; margin-bottom: 5px;">Email Address</strong>
-                    <a href="mailto:${data.email}" style="color: #1877f2; text-decoration: none;">${data.email}</a>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+                    <span style="color: #888; font-size: 13px;">Email</span><br/>
+                    <a href="mailto:${data.email}" style="color: #333; font-size: 15px; text-decoration: none;">${data.email}</a>
                   </td>
                 </tr>
-                <tr><td style="height: 10px;"></td></tr>
                 <tr>
-                  <td style="padding: 12px; background-color: #f8f9fa; border-left: 4px solid #1877f2;">
-                    <strong style="color: #333333; display: block; margin-bottom: 5px;">Phone Number</strong>
-                    <a href="tel:${data.phone}" style="color: #1877f2; text-decoration: none;">${data.phone}</a>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+                    <span style="color: #888; font-size: 13px;">Phone</span><br/>
+                    <a href="tel:${data.phone}" style="color: #333; font-size: 15px; text-decoration: none;">${data.phone}</a>
                   </td>
                 </tr>
-                <tr><td style="height: 10px;"></td></tr>
                 <tr>
-                  <td style="padding: 12px; background-color: #f8f9fa; border-left: 4px solid #1877f2;">
-                    <strong style="color: #333333; display: block; margin-bottom: 5px;">Current Level</strong>
-                    <span style="color: #555555;">${levelMap[data.level] || data.level}</span>
+                  <td style="padding: 10px 0; ${data.message ? 'border-bottom: 1px solid #f0f0f0;' : ''}">
+                    <span style="color: #888; font-size: 13px;">Level</span><br/>
+                    <span style="color: #333; font-size: 15px;">${levelMap[data.level] || data.level}</span>
                   </td>
                 </tr>
                 ${data.message ? `
-                <tr><td style="height: 10px;"></td></tr>
                 <tr>
-                  <td style="padding: 12px; background-color: #f8f9fa; border-left: 4px solid #1877f2;">
-                    <strong style="color: #333333; display: block; margin-bottom: 5px;">Message</strong>
-                    <p style="color: #555555; margin: 5px 0 0 0; line-height: 1.6;">${data.message}</p>
+                  <td style="padding: 10px 0;">
+                    <span style="color: #888; font-size: 13px;">Message</span><br/>
+                    <span style="color: #333; font-size: 15px; line-height: 1.5;">${data.message}</span>
                   </td>
                 </tr>
                 ` : ''}
               </table>
 
-              <!-- Call to Action -->
-              <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
-                <p style="margin: 0; color: #856404; font-weight: bold;">Action Required</p>
-                <p style="margin: 10px 0 0 0; color: #856404;">Please respond to this enquiry within 2 hours to maintain our quick response promise.</p>
-              </div>
-
-              <!-- Timestamp -->
-              <p style="color: #999999; font-size: 12px; margin-top: 30px;">
-                Submitted on: ${new Date(data.submittedAt).toLocaleString('en-US', {
-                  dateStyle: 'full',
-                  timeStyle: 'short'
-                })}
+              <p style="color: #888; font-size: 12px; margin: 25px 0 0 0;">
+                Received: ${new Date(data.submittedAt).toLocaleString('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  })}
               </p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e5e5;">
-              <p style="margin: 0; color: #8a8d91; font-size: 12px;">
-                This message was automatically generated by PadhaiHub Enquiry System
-              </p>
-              <p style="margin: 5px 0 0 0; color: #8a8d91; font-size: 12px;">
-                Digi Technology, Kathmandu, Nepal
+            <td style="padding: 20px 30px; border-top: 1px solid #eee;">
+              <p style="margin: 0; color: #999; font-size: 12px;">
+                PadhaiHub Enquiry System
               </p>
             </td>
           </tr>
@@ -120,82 +101,67 @@ exports.getUserEnquiryConfirmationTemplate = (data) => {
     <html lang="en">
     <head>
       <meta charset="UTF-8" />
-      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Enquiry Confirmation</title>
+      <title>Enquiry Received</title>
     </head>
-    <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
-      <table border="0" cellspacing="0" cellpadding="0" align="center" style="border-collapse: collapse; width: 100%; max-width: 600px; margin: 20px auto; background-color: #ffffff;">
+    <body style="margin: 0; padding: 0; background-color: #f9f9f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+      <table border="0" cellspacing="0" cellpadding="0" align="center" style="border-collapse: collapse; width: 100%; max-width: 560px; margin: 40px auto; background-color: #ffffff; border: 1px solid #e0e0e0;">
         <tbody>
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #1877f2 0%, #0d5dbf 100%); padding: 30px; text-align: center;">
-              <img src="https://digischoolglobal.com/wp-content/uploads/2022/04/Digi-school-logo.png"
-                   height="60"
-                   alt="PadhaiHub"
-                   style="margin-bottom: 15px;" />
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Thank You for Your Enquiry!</h1>
+            <td style="padding: 30px 30px 20px 30px; border-bottom: 1px solid #eee;">
+              <h1 style="color: #333; margin: 0; font-size: 22px; font-weight: 600;">PadhaiHub</h1>
             </td>
           </tr>
 
           <!-- Content -->
           <tr>
-            <td style="padding: 40px 30px;">
-              <h2 style="color: #333333; margin: 0 0 15px 0; font-size: 20px;">Hello ${data.name},</h2>
-
-              <p style="color: #555555; line-height: 1.6; margin-bottom: 20px;">
-                Thank you for your interest in PadhaiHub! We have received your enquiry and our education counselors will get back to you shortly.
+            <td style="padding: 30px;">
+              <p style="color: #333; margin: 0 0 20px 0; font-size: 15px; line-height: 1.6;">
+                Hi ${data.name},
               </p>
 
-              <!-- Info Box -->
-              <div style="background-color: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #1877f2; margin: 25px 0;">
-                <p style="margin: 0; color: #0d5dbf; font-weight: bold;">What happens next?</p>
-                <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #333333;">
-                  <li style="margin-bottom: 8px;">Our team will review your enquiry</li>
-                  <li style="margin-bottom: 8px;">We'll contact you within 2 hours during business hours</li>
-                  <li style="margin-bottom: 8px;">We'll help you find the perfect course for your goals</li>
-                </ul>
-              </div>
+              <p style="color: #555; line-height: 1.6; margin-bottom: 20px; font-size: 15px;">
+                Thanks for reaching out. We've received your enquiry and will get back to you soon.
+              </p>
 
-              <!-- Details Summary -->
-              <h3 style="color: #333333; margin: 30px 0 15px 0; font-size: 16px;">Your Enquiry Details:</h3>
-              <table border="0" cellspacing="0" cellpadding="8" style="width: 100%; background-color: #f8f9fa; border-radius: 6px;">
+              <p style="color: #555; line-height: 1.6; margin-bottom: 20px; font-size: 15px;">
+                Here's a summary of what you submitted:
+              </p>
+
+              <table border="0" cellspacing="0" cellpadding="0" style="width: 100%; margin-bottom: 25px;">
                 <tr>
-                  <td style="color: #666666; width: 35%;"><strong>Email:</strong></td>
-                  <td style="color: #333333;">${data.email}</td>
+                  <td style="padding: 8px 0; color: #888; font-size: 14px; width: 80px;">Email:</td>
+                  <td style="padding: 8px 0; color: #333; font-size: 14px;">${data.email}</td>
                 </tr>
                 <tr>
-                  <td style="color: #666666;"><strong>Phone:</strong></td>
-                  <td style="color: #333333;">${data.phone}</td>
+                  <td style="padding: 8px 0; color: #888; font-size: 14px;">Phone:</td>
+                  <td style="padding: 8px 0; color: #333; font-size: 14px;">${data.phone}</td>
                 </tr>
                 <tr>
-                  <td style="color: #666666;"><strong>Level:</strong></td>
-                  <td style="color: #333333;">${data.level}</td>
+                  <td style="padding: 8px 0; color: #888; font-size: 14px;">Level:</td>
+                  <td style="padding: 8px 0; color: #333; font-size: 14px;">${data.level}</td>
                 </tr>
               </table>
 
-              <!-- Contact Section -->
-              <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; text-align: center;">
-                <p style="margin: 0; color: #333333; font-weight: bold;">Need immediate assistance?</p>
-                <p style="margin: 10px 0 0 0; color: #555555;">
-                  Call us at <a href="tel:+9779812345678" style="color: #1877f2; text-decoration: none;">+977 98-12345678</a>
-                </p>
-              </div>
+              <p style="color: #555; line-height: 1.6; margin-bottom: 0; font-size: 15px;">
+                If you have any questions, feel free to reply to this email.
+              </p>
 
-              <p style="color: #999999; font-size: 13px; margin-top: 30px; line-height: 1.5;">
-                If you didn't submit this enquiry, please ignore this email or contact us if you have concerns.
+              <p style="color: #555; line-height: 1.6; margin: 25px 0 0 0; font-size: 15px;">
+                — The PadhaiHub Team
               </p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e5e5;">
-              <p style="margin: 0; color: #8a8d91; font-size: 12px;">
-                This message was sent by PadhaiHub - Your Learning Partner
+            <td style="padding: 20px 30px; border-top: 1px solid #eee;">
+              <p style="margin: 0 0 8px 0; color: #999; font-size: 12px;">
+                © ${new Date().getFullYear()} PadhaiHub. All rights reserved.
               </p>
-              <p style="margin: 5px 0 0 0; color: #8a8d91; font-size: 12px;">
-                Digi Technology, Kathmandu, Nepal
+              <p style="margin: 0; color: #999; font-size: 12px;">
+                GreenMantis, Kathmandu, Nepal
               </p>
             </td>
           </tr>

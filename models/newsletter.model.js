@@ -35,8 +35,7 @@ let Newsletter = new Schema(
     }
 );
 
-// Index for faster email lookups
-Newsletter.index({ email: 1 });
+// Index for faster status lookups
 Newsletter.index({ status: 1 });
 
 // Hide some attributes while sending json response
