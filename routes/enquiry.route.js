@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const controller = require("../controllers/enquiry.controller");
 const { verifyToken, isAdminOrSuperAdmin } = require("../middlewares/auth.middleware");
+const { enquiryLimiter } = require("../middlewares/rateLimiter.middleware");
 const { body } = require("express-validator");
 
 // Validation rules for creating an enquiry
@@ -8,7 +9,8 @@ const createEnquiryValidation = [
   body('name')
     .trim()
     .notEmpty().withMessage('Name is required')
-    .isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters'),
+    .isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters')
+    .escape(), // XSS protection
 
   body('email')
     .trim()
@@ -30,6 +32,7 @@ const createEnquiryValidation = [
     .optional()
     .trim()
     .isLength({ max: 1000 }).withMessage('Message must not exceed 1000 characters')
+    .escape() // XSS protection
 ];
 
 // Validation rules for updating enquiry status
@@ -42,7 +45,8 @@ const updateEnquiryValidation = [
   body('notes')
     .optional()
     .trim()
-    .isLength({ max: 2000 }).withMessage('Notes must not exceed 2000 characters'),
+    .isLength({ max: 2000 }).withMessage('Notes must not exceed 2000 characters')
+    .escape(), // XSS protection
 
   body('assignedTo')
     .optional()
@@ -51,7 +55,7 @@ const updateEnquiryValidation = [
 
 // ======================= PUBLIC ROUTES =======================
 // Create new enquiry (no authentication required)
-router.post('/', createEnquiryValidation, controller.createEnquiry);
+router.post('/', enquiryLimiter, createEnquiryValidation, controller.createEnquiry);
 
 // ======================= ADMIN/SUPERADMIN ROUTES =======================
 // All routes below require authentication and admin privileges

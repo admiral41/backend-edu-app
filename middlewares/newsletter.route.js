@@ -6,26 +6,26 @@ const { body } = require("express-validator");
 
 // Validation rules for subscribing to newsletter
 const subscribeValidation = [
-  body('email')
-    .trim()
-    .notEmpty().withMessage('Email is required')
-    .isEmail().withMessage('Invalid email address')
-    .normalizeEmail(),
+    body('email')
+        .trim()
+        .notEmpty().withMessage('Email is required')
+        .isEmail().withMessage('Invalid email address')
+        .normalizeEmail(),
 
-  body('name')
-    .optional()
-    .trim()
-    .isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters')
-    .escape() // XSS protection
+    body('name')
+        .optional()
+        .trim()
+        .isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters')
+        .escape() // XSS protection
 ];
 
 // Validation rules for unsubscribing
 const unsubscribeValidation = [
-  body('email')
-    .trim()
-    .notEmpty().withMessage('Email is required')
-    .isEmail().withMessage('Invalid email address')
-    .normalizeEmail()
+    body('email')
+        .trim()
+        .notEmpty().withMessage('Email is required')
+        .isEmail().withMessage('Invalid email address')
+        .normalizeEmail()
 ];
 
 // ======================= PUBLIC ROUTES =======================
