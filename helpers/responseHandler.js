@@ -1,4 +1,3 @@
-// custom response function
 var sendSuccessResponse = async ({ res, status = 200, msg = null, data = null, totalData = null, totalPage = null, token = null }) => {
   var response = {
     status: status,

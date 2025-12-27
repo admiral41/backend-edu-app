@@ -19,7 +19,7 @@ async function createSuperAdmin() {
         firstname: process.env.SUPERADMIN_FIRSTNAME,
         lastname: process.env.SUPERADMIN_LASTNAME,
         email: process.env.SUPERADMIN_EMAIL,
-        contact: process.env.SUPERADMIN_CONTACT,
+        phone: process.env.SUPERADMIN_CONTACT,
         roles: ["SUPERADMIN"],
         isVerified: true,
         verificationCode: 0,

@@ -9,16 +9,25 @@ let User = new Schema(
         },
         lastname: {
             type: String,
-            required: false,
-            default: ""
+            required: true,
         },
         email: {
             type: String,
             required: true,
             trim: true,
+            unique: true,
         },
-        contact: {
+        phone: {
             type: String,
+            required: true,
+        },
+        dob: {
+            type: Date,
+            required: false,
+        },
+        gender: {
+            type: String,
+            enum: ['Male', 'Female', 'Other'],
             required: false,
         },
         address: {
@@ -29,82 +38,105 @@ let User = new Schema(
             type: String,
             required: false,
         },
-        userImage: {
+        province: {
             type: String,
             required: false,
+        },
+        userImage: {
+            type: String,
+            default: ''
         },
         roles: {
             type: [String],
             enum: ['LEARNER', 'LECTURER', 'ADMIN', 'SUPERADMIN'],
-            default: 'LEARNER'
+            default: ['LEARNER']
+        },
+
+        // Learner specific fields
+        currentLevel: {
+            type: String,
+            required: false,
+        },
+        stream: {
+            type: String,
+            required: false,
+        },
+        schoolCollege: {
+            type: String,
+            required: false,
+        },
+
+        // Lecturer specific fields (will be populated after verification)
+        highestEducation: {
+            type: String,
+            required: false,
+        },
+        universityCollege: {
+            type: String,
+            required: false,
+        },
+        majorSpecialization: {
+            type: String,
+            required: false,
+        },
+        teachingExperience: {
+            type: Number,
+            default: 0,
+        },
+        employmentStatus: {
+            type: String,
+            required: false,
+        },
+        preferredLevel: {
+            type: String,
+            required: false,
+        },
+        subjects: [{
+            type: String,
+        }],
+        availability: {
+            type: String,
+            required: false,
+        },
+        teachingMotivation: {
+            type: String,
+            required: false,
         },
 
         isSuspended: {
             type: Boolean,
             default: false,
         },
-        gender: {
-            type: String,
-            required: false,
-        },
-        province: {
-            type: String,
-            required: false,
-        },
-        background: {
-            type: String,
-            required: false,
-        },
-        bio: {
-            type: String,
-            required: false,
-        },
-        documents: [
-            {
-                docType: String,
-                docName: String,
-            },
-        ],
-        // startTime: {
-        //     type: String,
-        //     required: false,
-        // },
-        // endTime: {
-        //     type: String,
-        //     required: false,
-        // },
-        certificateName: {
-            type: String,
-            required: false,
-        },
-        hash: { type: String },
-        salt: { type: String },
-        socialMediaLinks: {
-            type: Object,
-            required: false,
-        },
-        verificationCode: {
-            type: Number,
-            require: true
-        },
         isVerified: {
             type: Boolean,
             default: false
         },
-        // blockedModules: [{ type: String, required: false }],
-        // maritalStatus: {
-        //     type: String,
-        //     default: 'Unmarried',
-        // },
+        verificationCode: {
+            type: Number,
+        },
+        hash: {
+            type: String,
+            required: true
+        },
+        salt: {
+            type: String,
+            required: true
+        },
+        isLecturerApplicant: {
+            type: Boolean,
+            default: false
+        },
     },
     {
         timestamps: true,
     }
 );
 
-// hide some attributes of user model while sending json response
 User.methods.toJSON = function () {
     let user = this.toObject();
+    delete user.hash;
+    delete user.salt;
+    delete user.verificationCode;
     delete user.updatedAt;
     delete user.__v;
     return user;

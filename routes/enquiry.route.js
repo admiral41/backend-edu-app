@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const controller = require("../controllers/enquiry.controller");
-const { verifyToken, isAdminOrSuperAdmin } = require("../middlewares/auth.middleware");
+const { verifyToken, isAdminOrSuperAdmin } = require("../middlewares/auth");
 const { enquiryLimiter } = require("../middlewares/rateLimiter.middleware");
 const { body } = require("express-validator");
 
@@ -59,7 +59,8 @@ router.post('/', enquiryLimiter, createEnquiryValidation, controller.createEnqui
 
 // ======================= ADMIN/SUPERADMIN ROUTES =======================
 // All routes below require authentication and admin privileges
-router.use(verifyToken, isAdminOrSuperAdmin);
+router.use((req, res, next) => verifyUser(req, res, next));
+router.use((req, res, next) => verifyAdmin(req, res, next));
 
 // Get all enquiries with filters and pagination
 router.get('/', controller.getAllEnquiries);

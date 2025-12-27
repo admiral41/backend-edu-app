@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const controller = require("../controllers/newsletter.controller");
-const { verifyToken, isAdminOrSuperAdmin } = require("../middlewares/auth.middleware");
+const { verifyToken, isAdminOrSuperAdmin } = require("../middlewares/auth");
 const { newsletterLimiter } = require("../middlewares/rateLimiter.middleware");
 const { body } = require("express-validator");
 

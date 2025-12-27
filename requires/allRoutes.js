@@ -8,7 +8,9 @@ const router = express.Router();
 router.get("/", (req, res) => {
     res.json({ message: "API Working ✅" });
 });
-router.use("/verification", require("../routes/verification"));
+router.use("/auth", require("../routes/auth.routes"));
+router.use("/verification", require("../routes/verification.routes"));
+router.use("/lecturer", require("../routes/lecturer"));
 router.use("/enquiry", require("../routes/enquiry.route"));
 router.use("/newsletter", require("../routes/newsletter.route"));
 
