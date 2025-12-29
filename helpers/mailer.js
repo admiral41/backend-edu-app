@@ -826,5 +826,285 @@ exports.sendNewsletterWelcomeMail = async (data) => {
     throw error;
   }
 };
+// ======================= COURSE REQUEST NOTIFICATION TO ADMIN =======================
+exports.sendCourseRequestNotification = async (data) => {
+  const { adminEmail, adminName, courseTitle, creatorName, creatorEmail, courseId, dashboardLink } = data;
 
+  const message = {
+    from: process.env.SENDER_EMAIL || 'noreply@padhaihub.com',
+    to: adminEmail,
+    subject: `🔔 New Course Approval Request: ${courseTitle} - PadhaiHub`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Course Request - PadhaiHub Admin</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; text-decoration: none; }
+          .content { padding: 40px; }
+          .greeting { font-size: 18px; margin-bottom: 20px; }
+          .alert-box { background: #fff3cd; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107; }
+          .course-info { background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; }
+          .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                   color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; 
+                   font-weight: bold; font-size: 14px; }
+          .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <a href="${process.env.FRONTEND_URI}" class="logo">PadhaiHub Admin</a>
+          </div>
+          
+          <div class="content">
+            <div class="greeting">
+              Hello <strong>${adminName}</strong>,
+            </div>
+            
+            <div class="alert-box">
+              <h3 style="margin-top: 0; color: #856404;">📋 New Course Approval Request</h3>
+              <p>A new course has been submitted and requires your review.</p>
+            </div>
+            
+            <div class="course-info">
+              <h4 style="margin-top: 0;">Course Details:</h4>
+              <table style="width: 100%;">
+                <tr>
+                  <td style="padding: 8px 0; width: 30%;"><strong>Course Title:</strong></td>
+                  <td style="padding: 8px 0;">${courseTitle}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Created By:</strong></td>
+                  <td style="padding: 8px 0;">${creatorName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Creator Email:</strong></td>
+                  <td style="padding: 8px 0;">${creatorEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Course ID:</strong></td>
+                  <td style="padding: 8px 0;">${courseId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Submitted:</strong></td>
+                  <td style="padding: 8px 0;">${new Date().toLocaleDateString()}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Status:</strong></td>
+                  <td style="padding: 8px 0; color: #856404;">Pending Approval</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${dashboardLink}" class="button">Review Course in Admin Panel</a>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p><small>This is an automated notification from PadhaiHub Admin System.</small></p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} PadhaiHub Admin Portal</p>
+          </div>
+        </div>
+      </body>
+      </html>`
+  };
+
+  try {
+    const result = await smtpTransport.sendMail(message);
+    console.log(`Course request notification sent to admin ${adminEmail}`);
+    return result;
+  } catch (error) {
+    console.error('Error sending course request notification:', error);
+    throw error;
+  }
+};
+
+// ======================= COURSE APPROVAL EMAIL =======================
+exports.sendCourseApprovalMail = async (data) => {
+  const { email, firstname, lastname, courseTitle, courseLink, publishDirectly } = data;
+
+  const message = {
+    from: process.env.SENDER_EMAIL || 'noreply@padhaihub.com',
+    to: email,
+    subject: `🎉 Your Course "${courseTitle}" Has Been Approved - PadhaiHub`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Course Approved - PadhaiHub</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+          .header { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 40px; text-align: center; }
+          .logo { color: white; font-size: 32px; font-weight: bold; text-decoration: none; }
+          .content { padding: 40px; }
+          .greeting { font-size: 20px; margin-bottom: 20px; }
+          .congrats-box { background: #d4edda; padding: 25px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745; text-align: center; }
+          .button { display: inline-block; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); 
+                   color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; 
+                   font-weight: bold; font-size: 16px; margin: 10px; }
+          .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <a href="${process.env.FRONTEND_URI}" class="logo">PadhaiHub</a>
+          </div>
+          
+          <div class="content">
+            <div class="greeting">
+              Dear <strong>${firstname} ${lastname}</strong>,
+            </div>
+            
+            <div class="congrats-box">
+              <h1 style="margin-top: 0; color: #155724;">✅ Course Approved!</h1>
+              <p style="font-size: 18px;">Your course <strong>"${courseTitle}"</strong> has been approved by our admin team.</p>
+              ${publishDirectly ? 
+                '<p style="font-size: 16px; color: #155724;"><strong>🎉 Great news! Your course has been published and is now live for students to enroll.</strong></p>' : 
+                '<p style="font-size: 16px;">You can now publish your course when you\'re ready.</p>'
+              }
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${courseLink}" class="button">View Your Course</a>
+              ${!publishDirectly ? 
+                '<a href="${process.env.FRONTEND_URI}/instructor/courses/manage" class="button">Manage Courses</a>' : 
+                ''
+              }
+            </div>
+            
+            <div style="margin-top: 30px;">
+              <h4>Next Steps:</h4>
+              ${publishDirectly ? 
+                '<ul><li>Start promoting your course</li><li>Monitor student enrollments</li><li>Engage with your students</li></ul>' : 
+                '<ul><li>Review your course content</li><li>Publish your course when ready</li><li>Start promoting to students</li></ul>'
+              }
+            </div>
+            
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p>Happy teaching!</p>
+              <p>Best regards,<br><strong>The PadhaiHub Team</strong></p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} PadhaiHub. All rights reserved.</p>
+            <p>This email was sent to ${email}</p>
+          </div>
+        </div>
+      </body>
+      </html>`
+  };
+
+  try {
+    const result = await smtpTransport.sendMail(message);
+    console.log(`Course approval email sent to ${email}`);
+    return result;
+  } catch (error) {
+    console.error('Error sending course approval email:', error);
+    throw error;
+  }
+};
+
+// ======================= COURSE REJECTION EMAIL =======================
+exports.sendCourseRejectionMail = async (data) => {
+  const { email, firstname, lastname, courseTitle, reason } = data;
+
+  const message = {
+    from: process.env.SENDER_EMAIL || 'noreply@padhaihub.com',
+    to: email,
+    subject: `Update on Your Course "${courseTitle}" - PadhaiHub`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Course Status Update - PadhaiHub</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+          .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 30px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; text-decoration: none; }
+          .content { padding: 40px; }
+          .greeting { font-size: 18px; margin-bottom: 20px; }
+          .status-box { background: #f8d7da; padding: 25px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #dc3545; }
+          .suggestion-box { background: #fff3cd; padding: 20px; border-radius: 5px; margin: 30px 0; }
+          .button { display: inline-block; background: #6c757d; color: white; padding: 12px 24px; 
+                   text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; }
+          .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <a href="${process.env.FRONTEND_URI}" class="logo">PadhaiHub</a>
+          </div>
+          
+          <div class="content">
+            <div class="greeting">
+              Dear <strong>${firstname} ${lastname}</strong>,
+            </div>
+            
+            <div class="status-box">
+              <h3 style="margin-top: 0; color: #721c24;">📄 Course Status: Requires Revision</h3>
+              <p>Thank you for submitting your course <strong>"${courseTitle}"</strong> for review.</p>
+              <p>After careful evaluation, we need you to make some revisions before we can approve your course.</p>
+              
+              <div style="background: white; padding: 15px; border-radius: 3px; margin-top: 15px;">
+                <strong>Feedback:</strong> ${reason}
+              </div>
+            </div>
+            
+            <div class="suggestion-box">
+              <h4 style="color: #856404;">💡 Suggestions for Improvement:</h4>
+              <ul>
+                <li>Review the feedback provided</li>
+                <li>Make the necessary changes to your course content</li>
+                <li>Ensure all requirements are met</li>
+                <li>Resubmit for review when ready</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.FRONTEND_URI}/instructor/courses/edit" class="button">Edit Your Course</a>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p>We appreciate your effort and look forward to your revised submission.</p>
+              <p>Sincerely,<br><strong>The PadhaiHub Team</strong></p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} PadhaiHub. All rights reserved.</p>
+            <p>This email was sent to ${email}</p>
+          </div>
+        </div>
+      </body>
+      </html>`
+  };
+
+  try {
+    const result = await smtpTransport.sendMail(message);
+    console.log(`Course rejection email sent to ${email}`);
+    return result;
+  } catch (error) {
+    console.error('Error sending course rejection email:', error);
+    throw error;
+  }
+};
 // module.exports = sendMail
