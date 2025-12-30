@@ -1,8 +1,92 @@
 const User = require("../models/user.model");
 const Lecturer = require("../models/lecturer.model");
+const Course = require("../models/course.model");
 const httpStatus = require("http-status");
 const { responseHandler } = require("../helpers/index");
 const { sendErrorResponse, sendSuccessResponse } = responseHandler;
+
+// ======================= DASHBOARD STATS =======================
+exports.getDashboardStats = async (req, res) => {
+  try {
+    // Get date for "this month" calculations
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // User counts
+    const [
+      totalUsers,
+      totalStudents,
+      totalInstructors,
+      newUsersThisMonth,
+      suspendedUsers
+    ] = await Promise.all([
+      User.countDocuments({ roles: { $nin: ['SUPERADMIN'] } }),
+      User.countDocuments({
+        roles: { $in: ['LEARNER'], $nin: ['LECTURER', 'ADMIN', 'SUPERADMIN'] }
+      }),
+      User.countDocuments({ roles: { $in: ['LECTURER'] } }),
+      User.countDocuments({
+        roles: { $nin: ['SUPERADMIN'] },
+        createdAt: { $gte: startOfMonth }
+      }),
+      User.countDocuments({
+        roles: { $nin: ['SUPERADMIN'] },
+        isSuspended: true
+      })
+    ]);
+
+    // Course counts
+    const [
+      totalCourses,
+      publishedCourses,
+      pendingCourses,
+      draftCourses
+    ] = await Promise.all([
+      Course.countDocuments({}),
+      Course.countDocuments({ status: 'published' }),
+      Course.countDocuments({ status: 'pending_approval' }),
+      Course.countDocuments({ status: 'draft' })
+    ]);
+
+    // Pending instructor applications
+    const pendingApplications = await Lecturer.countDocuments({
+      requestStatus: 'pending'
+    });
+
+    return sendSuccessResponse({
+      res,
+      status: httpStatus.OK,
+      data: {
+        users: {
+          total: totalUsers,
+          students: totalStudents,
+          instructors: totalInstructors,
+          newThisMonth: newUsersThisMonth,
+          suspended: suspendedUsers
+        },
+        courses: {
+          total: totalCourses,
+          published: publishedCourses,
+          pendingApproval: pendingCourses,
+          draft: draftCourses
+        },
+        applications: {
+          pending: pendingApplications
+        }
+      },
+      msg: "Dashboard stats retrieved successfully."
+    });
+
+  } catch (err) {
+    console.error('Get dashboard stats error:', err);
+    return sendErrorResponse({
+      res,
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      msg: "Failed to get dashboard stats.",
+      err: err.message
+    });
+  }
+};
 
 // ======================= GET ALL USERS =======================
 exports.getAllUsers = async (req, res) => {

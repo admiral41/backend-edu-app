@@ -10,6 +10,22 @@ const { verifyUser, verifyAdmin } = require('../middlewares/auth');
  *   description: Admin management endpoints
  */
 
+// ======================= DASHBOARD =======================
+
+/**
+ * @swagger
+ * /admin/dashboard:
+ *   get:
+ *     summary: Get admin dashboard stats (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard statistics
+ */
+router.get('/dashboard', verifyUser, verifyAdmin, adminController.getDashboardStats);
+
 // ======================= USER MANAGEMENT =======================
 
 /**
