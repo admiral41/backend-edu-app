@@ -37,7 +37,6 @@ let lecturerSchema = new Schema(
 
 lecturerSchema.methods.toJSON = function () {
   let lecturer = this.toObject();
-  delete lecturer.createdAt;
   delete lecturer.updatedAt;
   delete lecturer.__v;
   return lecturer;

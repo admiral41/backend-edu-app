@@ -147,7 +147,6 @@ User.methods.toJSON = function () {
     delete user.hash;
     delete user.salt;
     delete user.verificationCode;
-    delete user.updatedAt;
     delete user.__v;
     return user;
 };
