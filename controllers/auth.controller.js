@@ -22,20 +22,22 @@ exports.learnerSignup = async (req, res) => {
       });
     }
 
-    const { 
-      email, 
-      password, 
-      firstname, 
-      lastname, 
-      phone, 
-      dob, 
-      gender, 
+    const {
+      email,
+      password,
+      firstname,
+      lastname,
+      phone,
+      dob,
+      gender,
       address,
       city,
       province,
       currentLevel,
       stream,
-      schoolCollege
+      schoolCollege,
+      termsAccepted,
+      privacyPolicyAccepted
     } = req.body;
 
     // Check if user exists
@@ -54,6 +56,7 @@ exports.learnerSignup = async (req, res) => {
     const verificationCode = generateRandomNum(100000, 999999);
 
     // Create learner user
+    const now = new Date();
     const user = await User.create({
       email,
       firstname,
@@ -71,7 +74,9 @@ exports.learnerSignup = async (req, res) => {
       salt,
       verificationCode,
       roles: ['LEARNER'],
-      isVerified: false
+      isVerified: false,
+      termsAcceptedAt: termsAccepted ? now : null,
+      privacyPolicyAcceptedAt: privacyPolicyAccepted ? now : null
     });
 
     // Send verification email
@@ -153,7 +158,9 @@ exports.lecturerSignup = async (req, res) => {
         preferredLevel,
         subjects,
         availability,
-        teachingMotivation
+        teachingMotivation,
+        termsAccepted,
+        privacyPolicyAccepted
       } = req.body;
 
       // Check if user exists
@@ -181,7 +188,8 @@ exports.lecturerSignup = async (req, res) => {
       const hash = await bcrypt.hash(password, salt);
       const verificationCode = generateRandomNum(100000, 999999);
 
-      // Create lecturer user (ONLY LEARNER role initially)
+      // Create lecturer user with LECTURER role (but pending approval)
+      const now = new Date();
       const user = await User.create({
         email,
         firstname,
@@ -204,9 +212,11 @@ exports.lecturerSignup = async (req, res) => {
         hash,
         salt,
         verificationCode,
-        roles: ['LEARNER'], // Only LEARNER role initially
-        isLecturerApplicant: true, // Flag to identify lecturer applicants
-        isVerified: false
+        roles: ['LECTURER'], // LECTURER role - but pending approval via Lecturer model
+        isLecturerApplicant: true,
+        isVerified: false,
+        termsAcceptedAt: termsAccepted ? now : null,
+        privacyPolicyAcceptedAt: privacyPolicyAccepted ? now : null
       });
 
       // Handle file uploads
@@ -350,28 +360,19 @@ exports.login = async (req, res) => {
     // Remove sensitive data
     const { hash, salt, verificationCode, ...responseBody } = user.toJSON();
     
-    // Check lecturer status
+    // Check lecturer status for users with LECTURER role
     if (user.roles.includes('LECTURER')) {
-      // User already has LECTURER role - check if approved
-      const lecturerProfile = await Lecturer.findOne({ 
-        user: user._id,
-        requestStatus: 'approved'
-      });
-      
-      if (!lecturerProfile || !lecturerProfile.isActive) {
-        responseBody.lecturerStatus = 'pending';
+      const lecturerRecord = await Lecturer.findOne({ user: user._id });
+
+      if (lecturerRecord) {
+        responseBody.lecturerStatus = lecturerRecord.requestStatus; // 'pending', 'approved', or 'rejected'
+        if (lecturerRecord.requestStatus === 'approved') {
+          responseBody.lecturerProfile = lecturerRecord;
+        }
       } else {
-        responseBody.lecturerStatus = 'approved';
-        responseBody.lecturerProfile = lecturerProfile;
+        // Edge case: has LECTURER role but no Lecturer record
+        responseBody.lecturerStatus = 'pending';
       }
-    } else if (user.isLecturerApplicant) {
-      // User applied for lecturer but not approved yet
-      const lecturerRequest = await Lecturer.findOne({ 
-        user: user._id 
-      });
-      
-      responseBody.lecturerStatus = lecturerRequest ? lecturerRequest.requestStatus : 'not_applied';
-      responseBody.isLecturerApplicant = true;
     }
 
     return sendSuccessResponse({ 
@@ -674,9 +675,9 @@ const sendLecturerApprovalEmail = async (user) => {
 };
 
 // NEW: Send rejection email to lecturer
-const sendLecturerRejectionEmail = async (user, reason = '') => {  
+const sendLecturerRejectionEmail = async (user, reason = '') => {
   try {
-    await helper.sendLecturerRejectionMail({ 
+    await helper.sendLecturerRejectionMail({
       email: user.email,
       firstname: user.firstname,
       lastname: user.lastname,
@@ -686,4 +687,213 @@ const sendLecturerRejectionEmail = async (user, reason = '') => {
     console.error('Failed to send lecturer rejection email:', error);
     throw error;
   }
+};
+
+// ======================= GET LECTURER APPLICATION =======================
+exports.getLecturerApplication = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select('-hash -salt -verificationCode -__v')
+      .lean();
+
+    if (!user) {
+      return sendErrorResponse({
+        res,
+        status: httpStatus.NOT_FOUND,
+        msg: "User not found."
+      });
+    }
+
+    // Check if user is a lecturer applicant
+    if (!user.roles.includes('LECTURER')) {
+      return sendErrorResponse({
+        res,
+        status: httpStatus.FORBIDDEN,
+        msg: "Not a lecturer applicant."
+      });
+    }
+
+    // Get lecturer application record
+    const lecturerRecord = await Lecturer.findOne({ user: user._id }).lean();
+
+    if (!lecturerRecord) {
+      return sendErrorResponse({
+        res,
+        status: httpStatus.NOT_FOUND,
+        msg: "Lecturer application not found."
+      });
+    }
+
+    return sendSuccessResponse({
+      res,
+      status: httpStatus.OK,
+      data: {
+        user,
+        lecturerApplication: lecturerRecord
+      },
+      msg: "Lecturer application retrieved successfully."
+    });
+  } catch (err) {
+    console.error('Get lecturer application error:', err);
+    return sendErrorResponse({
+      res,
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      msg: "Failed to get lecturer application.",
+      err: err.message
+    });
+  }
+};
+
+// ======================= LECTURER REAPPLY =======================
+exports.lecturerReapply = async (req, res) => {
+  const uploadFile = upload.any();
+
+  uploadFile(req, res, async (err) => {
+    try {
+      if (err) {
+        return sendErrorResponse({
+          res,
+          status: httpStatus.BAD_REQUEST,
+          msg: "File upload failed: " + err.message
+        });
+      }
+
+      const user = await User.findById(req.user._id);
+
+      if (!user) {
+        return sendErrorResponse({
+          res,
+          status: httpStatus.NOT_FOUND,
+          msg: "User not found."
+        });
+      }
+
+      // Check if user is a lecturer
+      if (!user.roles.includes('LECTURER')) {
+        return sendErrorResponse({
+          res,
+          status: httpStatus.FORBIDDEN,
+          msg: "Not a lecturer applicant."
+        });
+      }
+
+      // Get lecturer record
+      const lecturerRecord = await Lecturer.findOne({ user: user._id });
+
+      if (!lecturerRecord) {
+        return sendErrorResponse({
+          res,
+          status: httpStatus.NOT_FOUND,
+          msg: "Lecturer application not found."
+        });
+      }
+
+      // Check if status is rejected (only rejected users can reapply)
+      if (lecturerRecord.requestStatus !== 'rejected') {
+        return sendErrorResponse({
+          res,
+          status: httpStatus.BAD_REQUEST,
+          msg: `Cannot reapply. Current status is: ${lecturerRecord.requestStatus}`
+        });
+      }
+
+      const {
+        phone,
+        dob,
+        gender,
+        address,
+        city,
+        province,
+        highestEducation,
+        universityCollege,
+        majorSpecialization,
+        teachingExperience,
+        employmentStatus,
+        preferredLevel,
+        subjects,
+        availability,
+        teachingMotivation
+      } = req.body;
+
+      // Parse subjects if it's a string
+      let subjectsArray = [];
+      if (subjects) {
+        if (typeof subjects === 'string') {
+          subjectsArray = subjects.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        } else if (Array.isArray(subjects)) {
+          subjectsArray = subjects;
+        }
+      }
+
+      // Update user fields
+      if (phone) user.phone = phone;
+      if (dob) user.dob = new Date(dob);
+      if (gender) user.gender = gender;
+      if (address) user.address = address;
+      if (city) user.city = city;
+      if (province) user.province = province;
+      if (highestEducation) user.highestEducation = highestEducation;
+      if (universityCollege) user.universityCollege = universityCollege;
+      if (majorSpecialization) user.majorSpecialization = majorSpecialization;
+      if (teachingExperience !== undefined) user.teachingExperience = parseInt(teachingExperience) || 0;
+      if (employmentStatus) user.employmentStatus = employmentStatus;
+      if (preferredLevel) user.preferredLevel = preferredLevel;
+      if (subjectsArray.length > 0) user.subjects = subjectsArray;
+      if (availability) user.availability = availability;
+      if (teachingMotivation) user.teachingMotivation = teachingMotivation;
+
+      await user.save();
+
+      // Handle file uploads
+      let newCvPath = lecturerRecord.cv; // Keep existing if no new upload
+      let newCertificates = lecturerRecord.certificates || [];
+
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          if (file.fieldname === 'cv') {
+            newCvPath = file.path;
+          } else if (file.fieldname === 'certificates') {
+            newCertificates.push(file.path);
+          }
+        });
+      }
+
+      // Update lecturer record
+      lecturerRecord.cv = newCvPath;
+      lecturerRecord.certificates = newCertificates;
+      lecturerRecord.requestStatus = 'pending'; // Reset to pending
+      await lecturerRecord.save();
+
+      // Notify admin about reapplication
+      try {
+        await notifyAdminAboutLecturerRequest(user, lecturerRecord);
+      } catch (notifyError) {
+        console.error('Failed to notify admin about reapplication:', notifyError);
+      }
+
+      const { hash: _, salt: __, verificationCode: ___, ...responseBody } = user.toJSON();
+
+      return sendSuccessResponse({
+        res,
+        status: httpStatus.OK,
+        msg: "Application resubmitted successfully. Your application is now pending review.",
+        data: {
+          user: responseBody,
+          lecturerApplication: {
+            id: lecturerRecord._id,
+            requestStatus: lecturerRecord.requestStatus
+          }
+        }
+      });
+
+    } catch (err) {
+      console.error('Lecturer reapply error:', err);
+      return sendErrorResponse({
+        res,
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        msg: "Failed to resubmit application.",
+        err: err.message
+      });
+    }
+  });
 };

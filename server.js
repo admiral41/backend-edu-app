@@ -6,6 +6,8 @@ const http = require("http");
 require("dotenv").config();
 
 const mongodb = require("./configs/mongodb");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./configs/swagger");
 const session = require("express-session");
 const passport = require("passport");
 const createSuperAdmin = require("./utils/createSuperAdmin")
@@ -42,6 +44,13 @@ app.use(passport.session());
 
 // CORS
 require("./requires/cors")(app);
+
+// Swagger API Documentation
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: "PadhaiHub API Docs"
+}));
 
 // All routes
 app.use(require("./requires/allRoutes"));

@@ -126,6 +126,16 @@ let User = new Schema(
             type: Boolean,
             default: false
         },
+
+        // Legal compliance - Terms and Privacy Policy acceptance
+        termsAcceptedAt: {
+            type: Date,
+            required: false,
+        },
+        privacyPolicyAcceptedAt: {
+            type: Date,
+            required: false,
+        },
     },
     {
         timestamps: true,

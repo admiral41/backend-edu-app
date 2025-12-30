@@ -8,6 +8,6 @@ module.exports = async () => {
         console.log("📦 MongoDB Connected Successfully");
     } catch (err) {
         console.error("❌ MongoDB Connection Failed:", err.message);
-        process.exit(1); 
+        process.exit(1);
     }
 };
