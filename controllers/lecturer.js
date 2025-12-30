@@ -1,12 +1,13 @@
 const httpStatus = require('http-status')
 const Lecturer = require('../models/lecturer.model')
-const User = require('../models/user.model') 
+const User = require('../models/user.model')
 const { responseHandler } = require('../helpers/index')
 const Course = require('../models/courses')
 const Week = require('../models/weeks')
 const Lesson = require('../models/lessons')
 const upload = require('../middlewares/multer')
-const helper = require('../helpers/mailer') 
+const helper = require('../helpers/mailer')
+const notificationService = require('../services/notificationService')
 const { parseFilters, sendErrorResponse, sendQueryResponse, sendSuccessResponse } = responseHandler
 
 const uploadFile = upload.any()
@@ -112,9 +113,9 @@ exports.verification = async (req, res, next) => {
       lecturerRequest.isActive = false;
       await lecturerRequest.save();
 
-      // Send rejection email - ALREADY CORRECT HERE
+      // Send rejection email
       try {
-        await helper.sendLecturerRejectionMail({  // CORRECT - uses Mail not Email
+        await helper.sendLecturerRejectionMail({
           email: user.email,
           firstname: user.firstname,
           lastname: user.lastname,
@@ -124,10 +125,17 @@ exports.verification = async (req, res, next) => {
         console.error('Failed to send rejection email:', emailError);
       }
 
-      return sendSuccessResponse({ 
-        res, 
-        status: httpStatus.OK, 
-        msg: 'Lecturer request rejected. Notification email sent.' 
+      // Send real-time + push notification to lecturer
+      try {
+        await notificationService.notifyLecturerRejected(user, req.body.reason);
+      } catch (notifyError) {
+        console.error('Failed to send rejection notification:', notifyError);
+      }
+
+      return sendSuccessResponse({
+        res,
+        status: httpStatus.OK,
+        msg: 'Lecturer request rejected. Notification email sent.'
       });
     }
 
@@ -152,17 +160,24 @@ exports.verification = async (req, res, next) => {
       await user.save();
     }
 
-    // Send approval email - ALREADY CORRECT HERE
+    // Send approval email
     try {
-      await helper.sendLecturerApprovalMail({  // CORRECT - uses Mail not Email
+      await helper.sendLecturerApprovalMail({
         email: user.email,
         firstname: user.firstname,
         lastname: user.lastname,
         loginLink: `${process.env.FRONTEND_URI}/login`,
-        dashboardLink: `${process.env.FRONTEND_URI}/lecturer/dashboard`
+        dashboardLink: `${process.env.FRONTEND_URI}/instructor-dashboard`
       });
     } catch (emailError) {
       console.error('Failed to send approval email:', emailError);
+    }
+
+    // Send real-time + push notification to lecturer
+    try {
+      await notificationService.notifyLecturerApproved(user);
+    } catch (notifyError) {
+      console.error('Failed to send approval notification:', notifyError);
     }
 
     return sendSuccessResponse({ 

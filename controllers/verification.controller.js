@@ -82,7 +82,7 @@ exports.processLecturerRequest = async (req, res) => {
           firstname: user.firstname,  
           lastname: user.lastname,   
           loginLink: `${process.env.FRONTEND_URI}/login`,
-          dashboardLink: `${process.env.FRONTEND_URI}/lecturer/dashboard`
+          dashboardLink: `${process.env.FRONTEND_URI}/instructor-dashboard`
         });
       } catch (emailError) {
         console.error('Failed to send approval email:', emailError);

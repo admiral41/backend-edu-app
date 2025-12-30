@@ -9,6 +9,7 @@ const { sendErrorResponse, sendSuccessResponse } = responseHandler;
 const { generateRandomNum } = generator;
 const { validationResult } = require("express-validator");
 const upload = require('../middlewares/multer');
+const notificationService = require('../services/notificationService');
 
 // ======================= LEARNER SIGNUP =======================
 exports.learnerSignup = async (req, res) => {
@@ -95,8 +96,15 @@ exports.learnerSignup = async (req, res) => {
     // Generate token
     const token = await generateToken(user._id);
 
+    // Notify admins about new learner registration (real-time + push)
+    try {
+      await notificationService.notifyNewLearnerRegistration(user);
+    } catch (notifyError) {
+      console.error('Failed to send registration notification:', notifyError);
+    }
+
     const { hash: _, salt: __, verificationCode: ___, ...responseBody } = user.toJSON();
-    
+
     return sendSuccessResponse({
       res,
       status: httpStatus.CREATED,
@@ -107,11 +115,11 @@ exports.learnerSignup = async (req, res) => {
 
   } catch (err) {
     console.error('Learner signup error:', err);
-    return sendErrorResponse({ 
-      res, 
-      status: httpStatus.INTERNAL_SERVER_ERROR, 
-      msg: "Failed to register learner.", 
-      err: err.message 
+    return sendErrorResponse({
+      res,
+      status: httpStatus.INTERNAL_SERVER_ERROR,
+      msg: "Failed to register learner.",
+      err: err.message
     });
   }
 };
@@ -264,11 +272,18 @@ exports.lecturerSignup = async (req, res) => {
         console.error('Failed to send verification email:', emailError);
       }
 
-      // Notify admin about new lecturer request
+      // Notify admin about new lecturer request (email)
       try {
         await notifyAdminAboutLecturerRequest(user, lecturerRequest);
       } catch (notifyError) {
-        console.error('Failed to notify admin:', notifyError);
+        console.error('Failed to notify admin via email:', notifyError);
+      }
+
+      // Notify admins via real-time + push notifications
+      try {
+        await notificationService.notifyNewLecturerApplication(user, lecturerRequest);
+      } catch (notifyError) {
+        console.error('Failed to send real-time notification:', notifyError);
       }
 
       // Generate token (they can login as learner while waiting for approval)
@@ -666,7 +681,7 @@ const sendLecturerApprovalEmail = async (user) => {
       firstname: user.firstname,
       lastname: user.lastname,
       loginLink: `${process.env.FRONTEND_URI}/login`,
-      dashboardLink: `${process.env.FRONTEND_URI}/lecturer/dashboard`
+      dashboardLink: `${process.env.FRONTEND_URI}/instructor-dashboard`
     });
   } catch (error) {
     console.error('Failed to send lecturer approval email:', error);

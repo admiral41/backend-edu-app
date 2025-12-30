@@ -10,7 +10,11 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./configs/swagger");
 const session = require("express-session");
 const passport = require("passport");
-const createSuperAdmin = require("./utils/createSuperAdmin")
+const createSuperAdmin = require("./utils/createSuperAdmin");
+
+// Socket.IO and Firebase
+const { initializeSocket } = require("./socket/socketManager");
+const { initializeFirebase } = require("./configs/firebase");
 // Start app
 const app = express();
 
@@ -62,6 +66,12 @@ const server = http.createServer(app);
 mongodb().then(async () => {
     // Create SUPERADMIN after DB is ready
     await createSuperAdmin();
+
+    // Initialize Firebase Admin SDK
+    initializeFirebase();
+
+    // Initialize Socket.IO
+    initializeSocket(server);
 
     server.listen(process.env.PORT, () => {
         console.log("========================================");

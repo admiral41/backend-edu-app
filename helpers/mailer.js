@@ -650,7 +650,7 @@ exports.sendLecturerStatusMail = async (data) => {
 
               ${status === 'activated' ? `
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URI}/lecturer/dashboard" style="display: inline-block; background-color: #6c757d; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: 600;">Go to Lecturer Dashboard</a>
+                <a href="${process.env.FRONTEND_URI}/instructor-dashboard" style="display: inline-block; background-color: #6c757d; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: 600;">Go to Instructor Dashboard</a>
               </div>
               ` : ''}
 
