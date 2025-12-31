@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
+const announcementController = require('../controllers/announcement.controller');
 const { verifyUser, verifyAdmin } = require('../middlewares/auth');
 
 /**
@@ -170,5 +171,22 @@ router.post('/users/:id/activate', verifyUser, verifyAdmin, adminController.acti
  *         description: User not found
  */
 router.delete('/users/:id', verifyUser, verifyAdmin, adminController.deleteUser);
+
+// ======================= ANNOUNCEMENTS =======================
+
+// Get all announcements
+router.get('/announcements', verifyUser, verifyAdmin, announcementController.getAnnouncements);
+
+// Get single announcement
+router.get('/announcements/:id', verifyUser, verifyAdmin, announcementController.getAnnouncementById);
+
+// Create announcement
+router.post('/announcements', verifyUser, verifyAdmin, announcementController.createAnnouncement);
+
+// Update announcement
+router.put('/announcements/:id', verifyUser, verifyAdmin, announcementController.updateAnnouncement);
+
+// Delete announcement
+router.delete('/announcements/:id', verifyUser, verifyAdmin, announcementController.deleteAnnouncement);
 
 module.exports = router;

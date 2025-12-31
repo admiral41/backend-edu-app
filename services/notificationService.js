@@ -53,7 +53,7 @@ const sendToUser = async (userId, notification, options = {}) => {
     // Send real-time notification via Socket.IO
     if (sendSocket) {
       socketManager.emitToUser(userId, 'notification', {
-        id: savedNotification?._id,
+        id: savedNotification?._id?.toString(),
         ...notification,
         createdAt: savedNotification?.createdAt || new Date()
       });
@@ -88,9 +88,11 @@ const sendToAdmins = async (notification, options = {}) => {
 
     const adminIds = admins.map((admin) => admin._id);
 
+    let savedNotifications = [];
+
     // Save to database for each admin
     if (saveToDB && adminIds.length > 0) {
-      await Notification.createForMultiple(adminIds, {
+      savedNotifications = await Notification.createForMultiple(adminIds, {
         type: notification.type,
         title: notification.title,
         message: notification.message,
@@ -101,12 +103,24 @@ const sendToAdmins = async (notification, options = {}) => {
       });
     }
 
-    // Send real-time notification via Socket.IO
+    // Send real-time notification via Socket.IO to each user with their notification ID
     if (sendSocket) {
-      socketManager.emitToAdmins('notification', {
-        ...notification,
-        createdAt: new Date()
-      });
+      if (savedNotifications.length > 0) {
+        // Emit to each user individually with their notification ID
+        savedNotifications.forEach((savedNotif) => {
+          socketManager.emitToUser(savedNotif.recipient.toString(), 'notification', {
+            id: savedNotif._id.toString(),
+            ...notification,
+            createdAt: savedNotif.createdAt || new Date()
+          });
+        });
+      } else {
+        // Fallback: emit to room without ID if not saved to DB
+        socketManager.emitToAdmins('notification', {
+          ...notification,
+          createdAt: new Date()
+        });
+      }
     }
 
     // Send push notification to all admins
@@ -137,8 +151,10 @@ const sendToLecturers = async (notification, options = {}) => {
 
     const lecturerIds = lecturers.map((l) => l._id);
 
+    let savedNotifications = [];
+
     if (saveToDB && lecturerIds.length > 0) {
-      await Notification.createForMultiple(lecturerIds, {
+      savedNotifications = await Notification.createForMultiple(lecturerIds, {
         type: notification.type,
         title: notification.title,
         message: notification.message,
@@ -150,10 +166,21 @@ const sendToLecturers = async (notification, options = {}) => {
     }
 
     if (sendSocket) {
-      socketManager.emitToLecturers('notification', {
-        ...notification,
-        createdAt: new Date()
-      });
+      if (savedNotifications.length > 0) {
+        // Emit to each user individually with their notification ID
+        savedNotifications.forEach((savedNotif) => {
+          socketManager.emitToUser(savedNotif.recipient.toString(), 'notification', {
+            id: savedNotif._id.toString(),
+            ...notification,
+            createdAt: savedNotif.createdAt || new Date()
+          });
+        });
+      } else {
+        socketManager.emitToLecturers('notification', {
+          ...notification,
+          createdAt: new Date()
+        });
+      }
     }
 
     if (sendPush) {
@@ -183,8 +210,10 @@ const sendToLearners = async (notification, options = {}) => {
 
     const learnerIds = learners.map((l) => l._id);
 
+    let savedNotifications = [];
+
     if (saveToDB && learnerIds.length > 0) {
-      await Notification.createForMultiple(learnerIds, {
+      savedNotifications = await Notification.createForMultiple(learnerIds, {
         type: notification.type,
         title: notification.title,
         message: notification.message,
@@ -196,10 +225,21 @@ const sendToLearners = async (notification, options = {}) => {
     }
 
     if (sendSocket) {
-      socketManager.emitToLearners('notification', {
-        ...notification,
-        createdAt: new Date()
-      });
+      if (savedNotifications.length > 0) {
+        // Emit to each user individually with their notification ID
+        savedNotifications.forEach((savedNotif) => {
+          socketManager.emitToUser(savedNotif.recipient.toString(), 'notification', {
+            id: savedNotif._id.toString(),
+            ...notification,
+            createdAt: savedNotif.createdAt || new Date()
+          });
+        });
+      } else {
+        socketManager.emitToLearners('notification', {
+          ...notification,
+          createdAt: new Date()
+        });
+      }
     }
 
     if (sendPush) {
@@ -225,8 +265,10 @@ const broadcast = async (notification, options = {}) => {
     const users = await User.find({ isSuspended: false }).select('_id');
     const userIds = users.map((u) => u._id);
 
+    let savedNotifications = [];
+
     if (saveToDB && userIds.length > 0) {
-      await Notification.createForMultiple(userIds, {
+      savedNotifications = await Notification.createForMultiple(userIds, {
         type: notification.type,
         title: notification.title,
         message: notification.message,
@@ -237,10 +279,21 @@ const broadcast = async (notification, options = {}) => {
     }
 
     if (sendSocket) {
-      socketManager.emitToAll('notification', {
-        ...notification,
-        createdAt: new Date()
-      });
+      if (savedNotifications.length > 0) {
+        // Emit to each user individually with their notification ID
+        savedNotifications.forEach((savedNotif) => {
+          socketManager.emitToUser(savedNotif.recipient.toString(), 'notification', {
+            id: savedNotif._id.toString(),
+            ...notification,
+            createdAt: savedNotif.createdAt || new Date()
+          });
+        });
+      } else {
+        socketManager.emitToAll('notification', {
+          ...notification,
+          createdAt: new Date()
+        });
+      }
     }
 
     if (sendPush) {

@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const mongoose = require('mongoose');
 const Notification = require('../models/notification.model');
 const notificationService = require('../services/notificationService');
 const { responseHandler } = require('../helpers/index');
@@ -89,6 +90,15 @@ exports.markAsRead = async (req, res) => {
     const { id } = req.params;
     const userId = req.user._id;
 
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return sendErrorResponse({
+        res,
+        status: httpStatus.BAD_REQUEST,
+        msg: 'Invalid notification ID'
+      });
+    }
+
     const notification = await Notification.findOneAndUpdate(
       { _id: id, recipient: userId },
       { read: true },
@@ -155,6 +165,15 @@ exports.deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return sendErrorResponse({
+        res,
+        status: httpStatus.BAD_REQUEST,
+        msg: 'Invalid notification ID'
+      });
+    }
 
     const notification = await Notification.findOneAndDelete({
       _id: id,

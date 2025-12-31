@@ -15,6 +15,7 @@ const createSuperAdmin = require("./utils/createSuperAdmin");
 // Socket.IO and Firebase
 const { initializeSocket } = require("./socket/socketManager");
 const { initializeFirebase } = require("./configs/firebase");
+const { publishScheduledAnnouncements } = require("./controllers/announcement.controller");
 // Start app
 const app = express();
 
@@ -79,6 +80,9 @@ mongodb().then(async () => {
             `🚀 Server Running at http://localhost:${process.env.PORT}`
         );
         console.log("========================================");
+
+        // Check for scheduled announcements every minute
+        setInterval(publishScheduledAnnouncements, 60 * 1000);
     });
 }).catch((err) => {
     console.error("Failed to connect to MongoDB:", err.message);

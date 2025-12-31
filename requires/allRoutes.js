@@ -17,5 +17,6 @@ router.use("/course", require("../routes/course.routes"));
 router.use("/admin", require("../routes/admin.routes"));
 router.use("/fcm", require("../routes/fcm.routes"));
 router.use("/notifications", require("../routes/notification.routes"));
+router.use("/announcements", require("../routes/announcement.routes"));
 
 module.exports = router; 
