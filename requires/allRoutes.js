@@ -18,5 +18,7 @@ router.use("/admin", require("../routes/admin.routes"));
 router.use("/fcm", require("../routes/fcm.routes"));
 router.use("/notifications", require("../routes/notification.routes"));
 router.use("/announcements", require("../routes/announcement.routes"));
-
+router.use("/categories", require("../routes/category.routes"));
+router.use("/weeks", require("../routes/week.routes"));
+router.use("/lessons", require("../routes/lesson.routes"));
 module.exports = router; 
